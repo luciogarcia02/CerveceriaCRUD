@@ -1,0 +1,24 @@
+﻿@model ShopVM
+@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+
+<h1>Shop</h1>
+<h4>Estas Cervezas estan "disponibles" en la tienda porque son la respuesta de consumir una API REST.</h4>
+</br>
+<div class="row">
+    @foreach (var item in Model.beers)
+    {
+        <div class="col-md-4 mb-4">
+            <div class="card" style="width: 18rem;">
+                <div class="card-body">
+                    <h5 class="card-title">@Html.DisplayFor(modelItem => item.Name)</h5>
+                    <p class="card-text">@Html.DisplayFor(modelItem => item.Description)</p>
+                    <input type="submit" class="btn btn-primary" value="Agregar al carrito" />
+                </div>
+            </div>
+        </div>
+    }
+</div>
