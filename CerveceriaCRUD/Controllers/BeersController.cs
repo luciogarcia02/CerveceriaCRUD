@@ -7,16 +7,20 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using CerveceriaCRUD.Db;
 using CerveceriaCRUD.Models;
+using System.Text.Json;
+using Newtonsoft.Json;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 
 namespace CerveceriaCRUD.Controllers
 {
     public class BeersController : Controller
     {
         private readonly BeersDb _context;
-
+        private string _APIurl;
         public BeersController(BeersDb context)
         {
             _context = context;
+            
         }
 
         // GET: Beers
@@ -25,6 +29,37 @@ namespace CerveceriaCRUD.Controllers
               return _context.Beers != null ? 
                           View(await _context.Beers.ToListAsync()) :
                           Problem("Entity set 'BeersDb.Beers'  is null.");
+        }
+     
+
+        public async Task<IActionResult> Shop()
+        {
+            string _APIurl = "https://65e7c1b453d564627a8f36b2.mockapi.io/api/beers";
+            using (HttpClient httpClient = new HttpClient())
+            {
+                var beerList = new ShopVM();
+                try
+                {
+                    var response = await httpClient.GetAsync(_APIurl);
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var jsonString = await response.Content.ReadAsStringAsync();
+                        var responseData = JsonConvert.DeserializeObject<List<Beer>>(jsonString);
+                        beerList.beers = responseData;
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Error: {response.StatusCode} - {response.ReasonPhrase}");
+                    }
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine($"Error: {e.Message}");
+                }
+
+                return View(beerList);
+            }
         }
 
         // GET: Beers/Details/5
@@ -56,7 +91,7 @@ namespace CerveceriaCRUD.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Description,graduation")] Beer beer)
+        public async Task<IActionResult> Create([Bind("Id,Name,Description")] Beer beer)
         {
             if (ModelState.IsValid)
             {
@@ -88,7 +123,7 @@ namespace CerveceriaCRUD.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Description,graduation")] Beer beer)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Description")] Beer beer)
         {
             if (id != beer.Id)
             {
